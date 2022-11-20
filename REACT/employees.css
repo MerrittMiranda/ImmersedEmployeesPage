@@ -1,0 +1,7 @@
+.employee-image {
+    border-radius: 50% !important;
+    height: 180px;
+    width: 165px;
+    margin-bottom: 6pt;
+    object-fit: cover;
+}
