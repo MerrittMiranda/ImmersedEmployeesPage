@@ -9,10 +9,16 @@ namespace Sabio.Models.Requests.InviteMembers
 {
     public class InviteMembersAddRequest
     {
+        [Required]
+        [StringLength(200, MinimumLength = 1, ErrorMessage = "First name should have at least 1 character.")]
         public string FirstName { get; set; }
 
+        [Required]
+        [StringLength(200, MinimumLength = 1, ErrorMessage = "Last name should have at least 1 character.")]
         public string LastName { get; set; }
 
+        [Required]
+        [EmailAddress]
         public string Email { get; set; }
 
         [Required]

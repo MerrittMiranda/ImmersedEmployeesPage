@@ -10,8 +10,8 @@ namespace Sabio.Models.Requests.Employees
 {
     public class EmployeeAddRequest : EmployeeBaseAddRequest
     {
-        [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Only positive number allowed")]
+
+        [Range(0, int.MaxValue, ErrorMessage = "Only positive number allowed")]
         public int UserId { get; set; }
 
         public string FirstName { get; set; }

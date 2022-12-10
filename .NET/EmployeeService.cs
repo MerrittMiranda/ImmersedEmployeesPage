@@ -94,14 +94,7 @@ namespace Sabio.Services
 
             _data.ExecuteNonQuery(procName, inputParamMapper: delegate (SqlParameterCollection collection)
             {
-                collection.AddWithValue("@FirstName", model.FirstName);
-                collection.AddWithValue("@LastName", model.LastName);
-                collection.AddWithValue("@Email", model.Email);
-                collection.AddWithValue("@UserRoleTypeId", userRoleTypeId);
-                collection.AddWithValue("@OrganizationId", model.OrganizationId);
-                collection.AddWithValue("@TokenTypeId", tokenTypeId);
-                collection.AddWithValue("@Token", token);
-                collection.AddWithValue("@CreatedBy", currentUserId);
+                AddCommonParams(model, userRoleTypeId, tokenTypeId, token, currentUserId, collection);
 
                 SqlParameter idOut = new SqlParameter("@Id", SqlDbType.Int);
 
@@ -113,10 +106,22 @@ namespace Sabio.Services
             {
                 object objectId = returnCollection["@Id"].Value;
 
-                Int32.TryParse(objectId.ToString(), out id);
+                int.TryParse(objectId.ToString(), out id);
             });
 
             return id;
+        }
+
+        private static void AddCommonParams(InviteMembersAddRequest model, int userRoleTypeId, int tokenTypeId, string token, int currentUserId, SqlParameterCollection collection)
+        {
+            collection.AddWithValue("@FirstName", model.FirstName);
+            collection.AddWithValue("@LastName", model.LastName);
+            collection.AddWithValue("@Email", model.Email);
+            collection.AddWithValue("@UserRoleTypeId", userRoleTypeId);
+            collection.AddWithValue("@OrganizationId", model.OrganizationId);
+            collection.AddWithValue("@TokenTypeId", tokenTypeId);
+            collection.AddWithValue("@Token", token);
+            collection.AddWithValue("@CreatedBy", currentUserId);
         }
 
         public Employee GetEmployee(int id)

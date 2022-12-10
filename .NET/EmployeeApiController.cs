@@ -15,6 +15,7 @@ using Sabio.Models.Requests;
 using Sabio.Models.Enums;
 using Sabio.Services.Interfaces;
 using Sabio.Models.Requests.InviteMembers;
+using Sabio.Models.Domain.Organizations;
 
 namespace Sabio.Web.Api.Controllers
 {
@@ -24,20 +25,24 @@ namespace Sabio.Web.Api.Controllers
     {
         private IEmployeeService _employeeService = null;
         private IAuthenticationService<int> _authService = null;
-        private IUserService _userService = null;
+        private IEmailsService _emailsService = null;
+        private IOrganizationService _organizationService = null;
 
         public EmployeeApiController(IEmployeeService service
-            , IUserService userService
+            , IEmailsService emailsService
+            , IOrganizationService organizationService
             , ILogger<EmployeeApiController> logger
             , IAuthenticationService<int> authService) : base(logger)
         {
             _employeeService = service;
             _authService = authService;
-            _userService = userService;
+            _emailsService = emailsService;
+            _organizationService = organizationService;
         }
 
 
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "SysAdmin, OrgAdmin")]
         public ActionResult<ItemResponse<Employee>> GetById(int id)
         {
             int code = 200;
@@ -61,7 +66,7 @@ namespace Sabio.Web.Api.Controllers
             {
                 code = 500;
                 base.Logger.LogError(ex.ToString());
-                response = new ErrorResponse($"Generic Error: {ex.Message}");
+                response = new ErrorResponse(ex.Message);
             }
 
             return StatusCode(code, response);
@@ -69,6 +74,7 @@ namespace Sabio.Web.Api.Controllers
 
 
         [HttpGet("organization/{orgsId:int}")]
+        [Authorize(Roles = "SysAdmin, OrgAdmin")]
         public ActionResult<ItemResponse<Paged<Employee>>> GetPaginatedByOrgsId(int orgsId, int pageIndex, int pageSize)
         {
             int code = 200;
@@ -100,6 +106,7 @@ namespace Sabio.Web.Api.Controllers
 
 
         [HttpGet("organization/{orgsId:int}/search")]
+        [Authorize(Roles = "SysAdmin, OrgAdmin")]
         public ActionResult<ItemResponse<Paged<Employee>>> SearchPaginated(int pageIndex, int pageSize, int orgsId, string query)
         {
             int code = 200;
@@ -131,6 +138,7 @@ namespace Sabio.Web.Api.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "SysAdmin, OrgAdmin")]
         public ActionResult<ItemResponse<int>> Create(EmployeeAddRequest model)
         {
             ObjectResult result = null;
@@ -157,9 +165,11 @@ namespace Sabio.Web.Api.Controllers
         }
 
         [HttpPost("invitemember")]
+        [Authorize(Roles = "SysAdmin, OrgAdmin")]
         public ActionResult<ItemResponse<int>> InsertMember(InviteMembersAddRequest model)
         {
             ObjectResult result = null;
+            Organization orgObject = null;
             int currentUserId = 0;
             int id = 0;
 
@@ -169,8 +179,9 @@ namespace Sabio.Web.Api.Controllers
                 int userRoleTypeId = (int)Roles.Customer;
                 string token = Guid.NewGuid().ToString();
                 int tokenTypeId = (int)TokenType.EmployeeInvite;
-
                 id = _employeeService.InsertMember(model, userRoleTypeId, tokenTypeId, token, currentUserId);
+                orgObject = _organizationService.Get(model.OrganizationId);
+                _emailsService.SendInviteEmail(model, token, orgObject);
                 ItemResponse<int> response = new ItemResponse<int>() { Item = id };
                 result = Created201(response);
 
@@ -187,14 +198,16 @@ namespace Sabio.Web.Api.Controllers
 
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "SysAdmin, OrgAdmin")]
         public ActionResult<SuccessResponse> Update(EmployeeUpdateRequest model)
         {
             int code = 200;
             BaseResponse response = null;
-            int currentUserId = _authService.GetCurrentUserId();
+
 
             try
             {
+                int currentUserId = _authService.GetCurrentUserId();
                 _employeeService.Update(model, currentUserId);
                 response = new SuccessResponse();
             }
@@ -209,14 +222,16 @@ namespace Sabio.Web.Api.Controllers
 
 
         [HttpPut("terminate/{id:int}")]
+        [Authorize(Roles = "SysAdmin, OrgAdmin")]
         public ActionResult<SuccessResponse> Terminate(int id)
         {
             int code = 200;
             BaseResponse response = null;
-            int currentUserId = _authService.GetCurrentUserId();
+
 
             try
             {
+                int currentUserId = _authService.GetCurrentUserId();
                 _employeeService.Terminate(id, currentUserId);
                 response = new SuccessResponse();
             }
