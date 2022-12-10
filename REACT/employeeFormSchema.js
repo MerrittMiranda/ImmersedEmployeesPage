@@ -9,10 +9,20 @@ const addEmployeeSchema = Yup.object().shape({
   startDate: Yup.date(),
 });
 
+const inviteMemberSchema = Yup.object().shape({
+  email: Yup.string().email("Invalid Email").required("Email is required"),
+  firstName: Yup.string().min(1).max(125),
+  lastName: Yup.string().min(1).max(125),
+});
+
 const searchEmailSchema = Yup.object().shape({
   email: Yup.string().email("Invalid Email").required("Email is required"),
 });
 
-const employeeSchema = { addEmployeeSchema, searchEmailSchema };
+const employeeSchema = {
+  addEmployeeSchema,
+  inviteMemberSchema,
+  searchEmailSchema,
+};
 
 export default employeeSchema;

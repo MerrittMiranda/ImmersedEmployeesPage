@@ -1,13 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Col, Form, Row } from "react-bootstrap";
-import { Formik, Field, ErrorMessage, Form as FormikForm } from "formik";
+import { ErrorMessage, Field, Formik, Form as FormikForm } from "formik";
 import PropTypes from "prop-types";
 import toastr from "toastr";
 import debug from "sabio-debug";
 import employeesService from "services/employeesService";
 import * as formSchema from "../../schemas/employeeFormSchema";
-import { useEffect } from "react";
 
 const _logger = debug.extend("EmployeesFormComponent");
 
@@ -56,8 +55,8 @@ const AddEmployeeForm = (props) => {
   };
 
   const onCreateError = (error) => {
-    _logger("Error: onCreateError()", error);
-    toastr.error("Error: unable to Add Employee.", error);
+    _logger("Error: onCreateError", error);
+    toastr.error("Unable to Add Employee.", "Error");
   };
 
   return (
@@ -111,7 +110,7 @@ const AddEmployeeForm = (props) => {
             className="form-control"
             placeholder="***-***-****"
           />
-          <ErrorMessage name="phoneNumber" components="" />
+          <ErrorMessage name="phone" components="" />
         </Form.Group>
 
         <Form.Group className="mb-3">
@@ -120,7 +119,7 @@ const AddEmployeeForm = (props) => {
             type="text"
             name="startDate"
             className="form-control"
-            placeholder="yyyy-mm-dd"
+            placeholder="Select Date"
           />
           <ErrorMessage name="startDate" components="" />
         </Form.Group>

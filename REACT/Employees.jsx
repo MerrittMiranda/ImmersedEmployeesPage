@@ -58,7 +58,7 @@ const Employees = () => {
           .getEmployeesPaginated(
             employeesData.pageIndex,
             employeesData.pageSize,
-            orgsId
+            orgsId // props.currentUser.currentOrgId
           )
           .then(onGetEmployeesSuccess)
           .catch(onGetEmployeesError);
@@ -158,7 +158,6 @@ const Employees = () => {
                 <h1 className="mb-1 h2 fw-bold">Employees</h1>
                 <Breadcrumb>
                   <Breadcrumb.Item>Dashboard</Breadcrumb.Item>
-                  <Breadcrumb.Item>User</Breadcrumb.Item>
                   <Breadcrumb.Item>Employees</Breadcrumb.Item>
                 </Breadcrumb>
               </div>

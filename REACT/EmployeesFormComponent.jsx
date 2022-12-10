@@ -1,12 +1,13 @@
 import React, { Fragment, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Breadcrumb, Button, Col, Form, Row, Tab } from "react-bootstrap";
-import { Formik, Field, ErrorMessage, Form as FormikForm } from "formik";
+import { Col, Breadcrumb, Button, Form, Row, Tab } from "react-bootstrap";
+import { ErrorMessage, Field, Formik, Form as FormikForm } from "formik";
 import toastr from "toastr";
 import debug from "sabio-debug";
 import employeesService from "services/employeesService";
 import * as formSchema from "../../schemas/employeeFormSchema";
 import AddEmployeeForm from "./AddEmployeeForm";
+import InviteMembersForm from "./InviteMembersForm";
 
 const _logger = debug.extend("EmployeesFormComponent");
 
@@ -14,11 +15,12 @@ const EmployeesFormComponent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [searchEmail] = useState({ email: "" });
+  const [searchEmail, setEmailData] = useState({ email: "" });
   const [formData, setFormData] = useState({
     userData: {},
   });
   const [isVerified, setIsVerified] = useState(false);
+  const [isNotVerified, setIsNotVerified] = useState(false);
 
   toastr.options = {
     toastClass: "analytics-toast-class",
@@ -38,6 +40,11 @@ const EmployeesFormComponent = () => {
   const onSearchClicked = (values) => {
     _logger(values, "should be email");
     const address = values.email;
+
+    setEmailData(() => {
+      return { email: address };
+    });
+
     employeesService
       .searchEmail(address)
       .then(onSearchEmailSuccess)
@@ -61,8 +68,11 @@ const EmployeesFormComponent = () => {
   };
 
   const onSearchEmailError = (error) => {
-    _logger(error, "Error: unable to search email.");
-    toastr.error("Unable to find email", "Error");
+    _logger(error, "Error: This email is not in our database.");
+    toastr.info("This email is not in our database", "What a Surprise!");
+
+    setIsNotVerified(true);
+    navigate(`/organization/${id}/employees/invitemember`);
   };
 
   const onGoToEmpClicked = () => {
@@ -107,7 +117,15 @@ const EmployeesFormComponent = () => {
               <div className="card w-50 mx-auto">
                 <div className="p-24 card-body">
                   <div className="mb-4">
-                    <h1 className="mb-1 fw-bold border-bottom">New Employee</h1>
+                    {!isNotVerified ? (
+                      <h1 className="mb-1 fw-bold border-bottom">
+                        New Employee
+                      </h1>
+                    ) : (
+                      <h1 className="mb-1 fw-bold border-bottom">
+                        Invite Member
+                      </h1>
+                    )}
                   </div>
                   <Formik
                     enableReinitialize={true}
@@ -117,7 +135,7 @@ const EmployeesFormComponent = () => {
                   >
                     <FormikForm>
                       <Row className="align-items-center">
-                        <Col sm={9} className="my-1">
+                        <Col sm={!isNotVerified ? 9 : 12} className="my-1">
                           <Form.Group as={Col}>
                             <Field
                               type="email"
@@ -130,16 +148,18 @@ const EmployeesFormComponent = () => {
                         </Col>
 
                         <Col xs="auto" className="my-1">
-                          <button
-                            type="submit"
-                            className={
-                              !isVerified
-                                ? "me-1 btn btn-primary"
-                                : "me-1 btn btn-success disabled"
-                            }
-                          >
-                            {!isVerified ? "Verify Email" : "Verified"}
-                          </button>
+                          {!isNotVerified && (
+                            <button
+                              type="submit"
+                              className={
+                                !isVerified
+                                  ? "me-1 btn btn-primary"
+                                  : "me-1 btn btn-success disabled"
+                              }
+                            >
+                              {!isVerified ? "Verify Email" : "Verified"}
+                            </button>
+                          )}
                         </Col>
                       </Row>
                     </FormikForm>
@@ -147,6 +167,9 @@ const EmployeesFormComponent = () => {
                   <Col>
                     {isVerified && (
                       <AddEmployeeForm newEmployee={formData.userData} />
+                    )}
+                    {isNotVerified && (
+                      <InviteMembersForm inviteMember={searchEmail} />
                     )}
                   </Col>
                 </div>

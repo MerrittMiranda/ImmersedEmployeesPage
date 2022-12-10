@@ -62,7 +62,7 @@ const createEmployee = (payload) => {
 const inviteMember = (payload) => {
   const config = {
     method: "POST",
-    url: `${endpoint.employeeUrl}/invitemembers`,
+    url: `${endpoint.employeeUrl}/invitemember`,
     data: payload,
     withCredntials: true,
     crossDomain: true,
